@@ -95,7 +95,15 @@ contract NFTPoolLockAndRelease is CCIPReceiver, OwnerIsCreator {
         allowlistedSenders[_sender] = allowed;
     }
 
-    // lock NFT and send CCIP transaction
+    /// @notice 将 NFT 锁定在本合约中，并发送 CCIP 消息到另一条链。
+    /// @param tokenId 要锁定并跨链转移的 NFT ID。
+    /// @param newOwner 目标链上 NFT 的最终接收者地址。
+    ///        它应当是目标链上的地址，可以是普通用户地址（EOA）或合约地址。
+    ///        在本实现中，消息负载中包含 `newOwner`，目标链上的接收合约会解码它并将 NFT 转给该地址。
+    /// @param destChainSelector Chainlink CCIP 的目标链选择器，用于指定要发送到哪条链。
+    ///        它告诉 CCIP 这条消息应该被发送到哪个目标链。
+    /// @param destReceiver 目标链上接收 CCIP 消息的地址。
+    ///        这通常是处理入站消息的目标合约地址，而不一定是 NFT 的最终拥有者。
     function lockAndSendNFT(
         uint256 tokenId,
         address newOwner,
