@@ -1,3 +1,5 @@
+// 01_deploy_nft.js
+// 本脚本用于部署主链上的 NFT 合约 MyToken。
 const { getNamedAccounts } = require("hardhat");
 
 module.exports = async({getNamedAccounts, deployments}) => {
