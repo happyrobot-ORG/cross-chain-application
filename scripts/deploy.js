@@ -6,7 +6,7 @@ const { ethers } = require("hardhat");
 
 async function main() {
   const fundMeFacotry = await ethers.getContractFactory("FundMe");
-  console.log("000deploiying the contract...");
+  console.log("deploiying the contract...");
   
   const fundMe = await fundMeFacotry.deploy(10);
   await fundMe.waitForDeployment();
