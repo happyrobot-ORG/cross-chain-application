@@ -10,36 +10,36 @@ import {SafeERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-
 import {WrappedNFT} from "./WrappedNFT.sol";
 
 /**
- * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
- * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
- * DO NOT USE THIS CODE IN PRODUCTION.
+ * 这是一个示例合约，使用硬编码值以便于说明。
+ * 这是一个示例合约，使用未经审核的代码。
+ * 切勿在生产环境中使用此代码。
  */
 
-/// @title - A simple messenger contract for sending/receving string data across chains.
+/// @title - 一个简单的跨链字符串消息发送/接收合约。
 contract NFTPoolBurnAndMint is CCIPReceiver, OwnerIsCreator {
     using SafeERC20 for IERC20;
 
-    // Custom errors to provide more descriptive revert messages.
-    error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
-    error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
-    error FailedToWithdrawEth(address owner, address target, uint256 value); // Used when the withdrawal of Ether fails.
+    // 自定义错误，用于提供更具体的 revert 信息。
+    error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // 用于确保合约余额足够支付费用。
+    error NothingToWithdraw(); // 在尝试提取 Ether 时，如果没有余额则抛出。
+    error FailedToWithdrawEth(address owner, address target, uint256 value); // 在 Ether 提取失败时抛出。
 
-    // Event emitted when a message is sent to another chain.
+    // 发送跨链消息时触发的事件。
     event TokenBurnedAndSent(
-        bytes32 indexed messageId, // The unique ID of the CCIP message.
-        uint64 indexed destinationChainSelector, // The chain selector of the destination chain.
-        address receiver, // The address of the receiver on the destination chain.
-        bytes text, // The text being sent.
-        address feeToken, // the token address used to pay CCIP fees.
-        uint256 fees // The fees paid for sending the CCIP message.
+        bytes32 indexed messageId, // CCIP 消息的唯一 ID。
+        uint64 indexed destinationChainSelector, // 目标链的选择器。
+        address receiver, // 目标链上消息接收者地址。
+        bytes text, // 发送的消息内容。
+        address feeToken, // 用于支付 CCIP 费用的代币地址。
+        uint256 fees // 发送 CCIP 消息时支付的费用。
     );
 
-    // Event emitted when a message is received from another chain.
+    // 接收到跨链消息时触发的事件。
     // event MessageReceived(
-    //     bytes32 indexed messageId, // The unique ID of the CCIP message.
-    //     uint64 indexed sourceChainSelector, // The chain selector of the source chain.
-    //     address sender, // The address of the sender from the source chain.
-    //     string text // The text that was received.
+    //     bytes32 indexed messageId, // CCIP 消息的唯一 ID。
+    //     uint64 indexed sourceChainSelector, // 来源链的选择器。
+    //     address sender, // 来源链发送者地址。
+    //     string text // 接收到的消息文本。
     // );
 
     struct RequestData{
@@ -47,31 +47,31 @@ contract NFTPoolBurnAndMint is CCIPReceiver, OwnerIsCreator {
         address newOwner;
     }
 
-    bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
-    string private s_lastReceivedText; // Store the last received text.
+    bytes32 private s_lastReceivedMessageId; // 保存最后接收到的消息 ID。
+    string private s_lastReceivedText; // 保存最后接收到的消息文本。
 
-    // Mapping to keep track of allowlisted destination chains.
+    // 记录允许的目标链。
     mapping(uint64 => bool) public allowlistedDestinationChains;
 
-    // Mapping to keep track of allowlisted source chains.
+    // 记录允许的来源链。
     mapping(uint64 => bool) public allowlistedSourceChains;
 
-    // Mapping to keep track of allowlisted senders.
+    // 记录允许的发送者地址。
     mapping(address => bool) public allowlistedSenders;
 
     IERC20 private s_linkToken;
 
     WrappedNFT public wnft;
 
-    /// @notice Constructor initializes the contract with the router address.
-    /// @param _router The address of the router contract.
-    /// @param _link The address of the link contract.
+    /// @notice 构造函数，用 Router 地址初始化合约。
+    /// @param _router Router 合约地址。
+    /// @param _link LINK 代币合约地址。
     constructor(address _router, address _link, address wnftAddr) CCIPReceiver(_router) {
         wnft = WrappedNFT(wnftAddr);
         s_linkToken = IERC20(_link);
     }
 
-    /// @dev Updates the allowlist status of a destination chain for transactions.
+    /// @dev 更新目标链的白名单状态。
     function allowlistDestinationChain(
         uint64 _destinationChainSelector,
         bool allowed
@@ -79,7 +79,7 @@ contract NFTPoolBurnAndMint is CCIPReceiver, OwnerIsCreator {
         allowlistedDestinationChains[_destinationChainSelector] = allowed;
     }
 
-    /// @dev Updates the allowlist status of a source chain for transactions.
+    /// @dev 更新来源链的白名单状态。
     function allowlistSourceChain(
         uint64 _sourceChainSelector,
         bool allowed
@@ -87,7 +87,7 @@ contract NFTPoolBurnAndMint is CCIPReceiver, OwnerIsCreator {
         allowlistedSourceChains[_sourceChainSelector] = allowed;
     }
 
-    /// @dev Updates the allowlist status of a sender for transactions.
+    /// @dev 更新发送者的白名单状态。
     function allowlistSender(address _sender, bool allowed) external onlyOwner {
         allowlistedSenders[_sender] = allowed;
     }
@@ -97,27 +97,27 @@ contract NFTPoolBurnAndMint is CCIPReceiver, OwnerIsCreator {
         address newOwner, 
         uint64 destChainSelector, 
         address receiver) public {
-            // verify if the sender is the owner of NFT
-            // comment this because the check is already performed by ERC721
+            // 验证发送者是否是 NFT 的所有者
+            // 注释掉该检查，因为 ERC721 的 transferFrom 已经会进行所有权验证
             // require(wnft.ownerOf(_tokenId) == msg.sender, "you are not the owner of the NFT");
 
-            // transfer NFT to the pool
+            // 将 NFT 转移到池子
             wnft.transferFrom(msg.sender, address(this), _tokenId);
-            // burn the NFT
+            // 销毁 NFT
             wnft.burn(_tokenId);
-            // send transaction to the destination chain
+            // 发送跨链消息到目标链
             bytes memory payload = abi.encode(_tokenId, newOwner);
             sendMessagePayLINK(destChainSelector, receiver, payload);
     }
 
 
-    /// @notice Sends data to receiver on the destination chain.
-    /// @notice Pay for fees in LINK.
-    /// @dev Assumes your contract has sufficient LINK.
-    /// @param _destinationChainSelector The identifier (aka selector) for the destination blockchain.
-    /// @param _receiver The address of the recipient on the destination blockchain.
-    /// @param _payload The data to be sent.
-    /// @return messageId The ID of the CCIP message that was sent.
+    /// @notice 将数据发送到目标链上的接收者。
+    /// @notice 使用 LINK 支付费用。
+    /// @dev 假设合约中有足够的 LINK。
+    /// @param _destinationChainSelector 目标链的标识符（选择器）。
+    /// @param _receiver 目标链上接收消息的地址。
+    /// @param _payload 要发送的数据。
+    /// @return messageId 发送的 CCIP 消息 ID。
     function sendMessagePayLINK(
         uint64 _destinationChainSelector,
         address _receiver,
@@ -127,29 +127,29 @@ contract NFTPoolBurnAndMint is CCIPReceiver, OwnerIsCreator {
         onlyOwner
         returns (bytes32 messageId)
     {
-        // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
+        // 在内存中创建 EVM2AnyMessage 结构体，包含发送跨链消息的必要信息
         Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessage(
             _receiver,
             _payload,
             address(s_linkToken)
         );
 
-        // Initialize a router client instance to interact with cross-chain router
+        // 初始化 Router 客户端实例，用于与跨链路由器交互
         IRouterClient router = IRouterClient(this.getRouter());
 
-        // Get the fee required to send the CCIP message
+        // 获取发送 CCIP 消息所需的费用
         uint256 fees = router.getFee(_destinationChainSelector, evm2AnyMessage);
 
         if (fees > s_linkToken.balanceOf(address(this)))
             revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
 
-        // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
+        // 批准 Router 代表本合约转移 LINK，支付费用
         s_linkToken.approve(address(router), fees);
 
-        // Send the CCIP message through the router and store the returned CCIP message ID
+        // 通过 Router 发送 CCIP 消息，并保存返回的消息 ID
         messageId = router.ccipSend(_destinationChainSelector, evm2AnyMessage);
 
-        // Emit an event with message details
+        // 触发事件，记录消息发送详情
         emit TokenBurnedAndSent(
             messageId,
             _destinationChainSelector,
@@ -159,11 +159,11 @@ contract NFTPoolBurnAndMint is CCIPReceiver, OwnerIsCreator {
             fees
         );
 
-        // Return the CCIP message ID
+        // 返回 CCIP 消息 ID
         return messageId;
     }
 
-    /// handle a received message
+    /// 处理接收到的消息
     function _ccipReceive(
         Client.Any2EVMMessage memory any2EvmMessage
     )
@@ -174,46 +174,46 @@ contract NFTPoolBurnAndMint is CCIPReceiver, OwnerIsCreator {
         address newOwner = reqData.newOwner;
         uint256 tokenId = reqData.tokenId;
 
-        // mint a wrappedToken
+        // 铸造一个包装后的 NFT
         wnft.mintWithSpecificTokenId(newOwner, tokenId);
 
         // emit MessageReceived(
         //     any2EvmMessage.messageId,
-        //     any2EvmMessage.sourceChainSelector, // fetch the source chain identifier (aka selector)
-        //     abi.decode(any2EvmMessage.sender, (address)), // abi-decoding of the sender address,
+        //     any2EvmMessage.sourceChainSelector, // 获取来源链标识符（选择器）
+        //     abi.decode(any2EvmMessage.sender, (address)), // 对发送者地址进行 ABI 解码
         //     abi.decode(any2EvmMessage.data, (string))
         // );
     }
 
-    /// @notice Construct a CCIP message.
-    /// @dev This function will create an EVM2AnyMessage struct with all the necessary information for sending a text.
-    /// @param _receiver The address of the receiver.
-    /// @param _payload The string data to be sent.
-    /// @param _feeTokenAddress The address of the token used for fees. Set address(0) for native gas.
-    /// @return Client.EVM2AnyMessage Returns an EVM2AnyMessage struct which contains information for sending a CCIP message.
+    /// @notice 构造 CCIP 消息。
+    /// @dev 该函数将创建一个包含发送文本所需信息的 EVM2AnyMessage 结构体。
+    /// @param _receiver 接收者地址。
+    /// @param _payload 要发送的数据。
+    /// @param _feeTokenAddress 用于支付费用的代币地址。设置 address(0) 表示使用原生 gas。
+    /// @return Client.EVM2AnyMessage 返回一个包含发送 CCIP 消息信息的 EVM2AnyMessage 结构体。
     function _buildCCIPMessage(
         address _receiver,
         bytes memory _payload,
         address _feeTokenAddress
     ) private pure returns (Client.EVM2AnyMessage memory) {
-        // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
+        // 在内存中创建一个用于发送跨链消息的 EVM2AnyMessage 结构体
         return
             Client.EVM2AnyMessage({
-                receiver: abi.encode(_receiver), // ABI-encoded receiver address
-                data: _payload, // ABI-encoded string
-                tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array aas no tokens are transferred
+                receiver: abi.encode(_receiver), // ABI 编码后的接收者地址
+                data: _payload, // ABI 编码后的数据
+                tokenAmounts: new Client.EVMTokenAmount[](0), // 空数组，表示不转移代币
                 extraArgs: Client._argsToBytes(
-                    // Additional arguments, setting gas limit
+                    // 附加参数，设置 gas 限制
                     Client.EVMExtraArgsV1({gasLimit: 200_000})
                 ),
-                // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
+                // 设置 feeToken 为费用支付代币地址
                 feeToken: _feeTokenAddress
             });
     }
 
-    /// @notice Fetches the details of the last received message.
-    /// @return messageId The ID of the last received message.
-    /// @return text The last received text.
+    /// @notice 获取最后接收到的消息详情。
+    /// @return messageId 最后接收消息的 ID。
+    /// @return text 最后接收的消息文本。
     function getLastReceivedMessageDetails()
         external
         view
@@ -222,41 +222,41 @@ contract NFTPoolBurnAndMint is CCIPReceiver, OwnerIsCreator {
         return (s_lastReceivedMessageId, s_lastReceivedText);
     }
 
-    /// @notice Fallback function to allow the contract to receive Ether.
-    /// @dev This function has no function body, making it a default function for receiving Ether.
-    /// It is automatically called when Ether is sent to the contract without any data.
+    /// @notice 回退函数，允许合约接收 Ether。
+    /// @dev 该函数没有函数体，用于接收没有数据的 Ether 转账。
+    /// 当 Ether 被发送到合约且不带数据时会自动调用。
     receive() external payable {}
 
-    /// @notice Allows the contract owner to withdraw the entire balance of Ether from the contract.
-    /// @dev This function reverts if there are no funds to withdraw or if the transfer fails.
-    /// It should only be callable by the owner of the contract.
-    /// @param _beneficiary The address to which the Ether should be sent.
+    /// @notice 允许合约所有者提取合约中的全部 Ether 余额。
+    /// @dev 如果没有可提取的资金或转账失败则 revert。
+    /// 该函数只能由合约所有者调用。
+    /// @param _beneficiary 接收 Ether 的地址。
     function withdraw(address _beneficiary) public onlyOwner {
-        // Retrieve the balance of this contract
+        // 获取本合约的 Ether 余额
         uint256 amount = address(this).balance;
 
-        // Revert if there is nothing to withdraw
+        // 如果没有可提取余额则 revert
         if (amount == 0) revert NothingToWithdraw();
 
-        // Attempt to send the funds, capturing the success status and discarding any return data
+        // 尝试发送 Ether，记录发送结果并忽略返回数据
         (bool sent, ) = _beneficiary.call{value: amount}("");
 
-        // Revert if the send failed, with information about the attempted transfer
+        // 如果发送失败则 revert，并带上失败信息
         if (!sent) revert FailedToWithdrawEth(msg.sender, _beneficiary, amount);
     }
 
-    /// @notice Allows the owner of the contract to withdraw all tokens of a specific ERC20 token.
-    /// @dev This function reverts with a 'NothingToWithdraw' error if there are no tokens to withdraw.
-    /// @param _beneficiary The address to which the tokens will be sent.
-    /// @param _token The contract address of the ERC20 token to be withdrawn.
+    /// @notice 允许合约所有者提取指定 ERC20 代币的全部余额。
+    /// @dev 如果没有可提取代币则 revert 并抛出 NothingToWithdraw。
+    /// @param _beneficiary 接收代币的地址。
+    /// @param _token 要提取的 ERC20 代币合约地址。
     function withdrawToken(
         address _beneficiary,
         address _token
     ) public onlyOwner {
-        // Retrieve the balance of this contract
+        // 获取本合约持有的该 ERC20 代币余额
         uint256 amount = IERC20(_token).balanceOf(address(this));
 
-        // Revert if there is nothing to withdraw
+        // 如果没有可提取代币则 revert
         if (amount == 0) revert NothingToWithdraw();
 
         IERC20(_token).safeTransfer(_beneficiary, amount);
