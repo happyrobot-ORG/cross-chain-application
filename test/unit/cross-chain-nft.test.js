@@ -25,6 +25,7 @@ describe("测试 NFT 是否能成功铸造",
         it("测试 NFT 的拥有者是否为铸造者", 
             async function(){
                 // 铸造 NFT 给 firstAccount
+                // 这里调用 nft.safeMint 的账户也是 firstAccount，因此 msg.sender 是 firstAccount
                 await nft.safeMint(firstAccount)
                 // 查询 NFT 的拥有者
                 const ownerOfNft = await nft.ownerOf(0)
@@ -40,6 +41,8 @@ describe("测试 NFT 是否能锁定并转移到目标链", async function() {
                 // 授权池子转移 NFT，lockAndSendNFT 内部会调用 transferFrom
                 await nft.approve(poolLnU.target, 0)
                 // 调用 lockAndSendNFT 锁定 NFT 并发送跨链消息
+                // 这里的调用者是 firstAccount，因为 poolLnU 已用 firstAccount 绑定
+                // 所以 lockAndSendNFT 中的 msg.sender 是 firstAccount
                 await poolLnU.lockAndSendNFT(0, firstAccount, chainSelector, poolMnB.target)
                 
                 // 检查 NFT 是否已经转移到池子地址
