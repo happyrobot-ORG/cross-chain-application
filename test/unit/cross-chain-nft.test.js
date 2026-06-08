@@ -20,6 +20,8 @@ before(async function(){
     chainSelector = (await ccipLocalSimulator.configuration()).chainSelector_
 })
 
+// 多个describe 块分别测试 NFT 的铸造、跨链转移和销毁功能，确保每个功能模块都能正确工作。每个 it 块内的测试步骤清晰，验证了预期的结果。
+// 依次顺序执行测试：先测试 NFT 铸造，再测试跨链转移，最后测试销毁和回转。每个步骤都依赖前一个步骤的结果，确保整个跨链流程的正确性。
 describe("测试 NFT 是否能成功铸造", 
     async function(){
         it("测试 NFT 的拥有者是否为铸造者", 
