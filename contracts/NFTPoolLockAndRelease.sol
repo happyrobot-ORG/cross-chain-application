@@ -69,6 +69,7 @@ contract NFTPoolLockAndRelease is CCIPReceiver, OwnerIsCreator {
     /// @notice 构造函数，使用 Router 地址初始化合约。
     /// @param _router Router 合约地址。
     /// @param _link LINK 代币合约地址。
+    /// @param nftAddr 要操作的 NFT 合约地址。
     constructor(address _router, address _link, address nftAddr) CCIPReceiver(_router) {
         s_linkToken = IERC20(_link);
         nft = MyToken(nftAddr);
