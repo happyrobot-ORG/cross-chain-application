@@ -37,7 +37,7 @@ describe("测试 NFT 是否能锁定并转移到目标链", async function() {
                 // 给源链池子充值 LINK，用于支付 CCIP 费用
                 await ccipLocalSimulator.requestLinkFromFaucet(poolLnU.target, ethers.parseEther("10"))
 
-                // 授权池子转移 NFT
+                // 授权池子转移 NFT，lockAndSendNFT 内部会调用 transferFrom
                 await nft.approve(poolLnU.target, 0)
                 // 调用 lockAndSendNFT 锁定 NFT 并发送跨链消息
                 await poolLnU.lockAndSendNFT(0, firstAccount, chainSelector, poolMnB.target)
