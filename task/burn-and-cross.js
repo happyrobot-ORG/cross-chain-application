@@ -10,7 +10,7 @@ task("burn-and-cross")
 
         // get token id from parameter
         const tokenId = taskArgs.tokenid
-        
+        // 从 hardhat-deploy 的部署信息里读取已部署的合约实例。
         const wnft = await ethers.getContract("WrappedNFT", firstAccount)
         const nftPoolBurnAndMint = await ethers.getContract("NFTPoolBurnAndMint", firstAccount)
         

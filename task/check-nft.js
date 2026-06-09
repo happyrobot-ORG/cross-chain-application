@@ -2,6 +2,7 @@ const { task } = require("hardhat/config")
 
 task("check-nft").setAction(async(taskArgs, hre) => {
     const { firstAccount } = await getNamedAccounts()
+    // 从 hardhat-deploy 的部署信息里读取已部署的合约实例。
     const nft = await ethers.getContract("MyToken", firstAccount)
 
     console.log("checking status of ERC-721")
