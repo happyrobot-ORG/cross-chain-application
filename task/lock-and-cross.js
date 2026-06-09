@@ -40,29 +40,52 @@ task("lock-and-cross")
         
         // transfer 10 LINK token from deployer to pool
         const balanceBefore = await linkToken.balanceOf(nftPoolLockAndRelease.target)
+        const deployerLinkBalance = await linkToken.balanceOf(firstAccount)
         console.log(`balance before: ${balanceBefore}`)
+        console.log(`deployer LINK balance: ${deployerLinkBalance}`)
         const transferTx = await linkToken.transfer(nftPoolLockAndRelease.target, ethers.parseEther("10"))
         await transferTx.wait(6)
         const balanceAfter = await linkToken.balanceOf(nftPoolLockAndRelease.target)
         console.log(`balance after: ${balanceAfter}`)
 
-        // approve the pool have the permision to transfer deployer's token
+        // approve the pool have the permission to transfer deployer's token
         const nft = await ethers.getContract("MyToken", firstAccount)
-        await nft.approve(nftPoolLockAndRelease.target, tokenId)
-        console.log("approve successfully")
+        const poolAddress = nftPoolLockAndRelease.target
+
+        try {
+            const tokenOwner = await nft.ownerOf(tokenId)
+            console.log(`NFT owner of token ${tokenId}: ${tokenOwner}`)
+        } catch (error) {
+            console.error(`failed to read NFT owner for token ${tokenId}:`, error)
+            throw error
+        }
+
+        const approvedAddress = await nft.getApproved(tokenId)
+        const isApprovedAll = await nft.isApprovedForAll(firstAccount, poolAddress)
+        console.log(`NFT approved to: ${approvedAddress}`)
+        console.log(`isApprovedForAll for pool: ${isApprovedAll}`)
+
+        const approveTx = await nft.approve(poolAddress, tokenId)
+        await approveTx.wait(1)
+        console.log(`approve transaction submitted for token ${tokenId} to pool ${poolAddress}`)
+        const approvedAfter = await nft.getApproved(tokenId)
+        console.log(`NFT approved after tx: ${approvedAfter}`)
 
         // ccip send
         console.log(`${tokenId}, ${firstAccount}, ${destChainSelector}, ${destReceiver}`)
-        const lockAndCrossTx = await nftPoolLockAndRelease
-            .lockAndSendNFT(
-            tokenId, 
-            firstAccount, 
-            destChainSelector, 
-            destReceiver
-        )
-        
-        // provide t
-        console.log(`NFT locked and crossed, transaction hash is ${lockAndCrossTx.hash}`)
+        let lockAndCrossTx
+        try {
+            lockAndCrossTx = await nftPoolLockAndRelease.lockAndSendNFT(
+                tokenId,
+                firstAccount,
+                destChainSelector,
+                destReceiver
+            )
+            console.log(`NFT locked and crossed, transaction hash is ${lockAndCrossTx.hash}`)
+        } catch (error) {
+            console.error("lockAndSendNFT failed:", error)
+            throw error
+        }
 })
 
 module.exports = {}

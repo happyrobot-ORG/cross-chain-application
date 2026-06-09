@@ -112,9 +112,12 @@ contract NFTPoolLockAndRelease is CCIPReceiver, OwnerIsCreator {
         uint64 destChainSelector,
         address destReceiver
     ) public returns (bytes32){
-        // 验证交易是否由 NFT 拥有者发起。
-        // 这里注释掉，因为 ERC721 的 transferFrom 已经会检查所有权。
-        // require(nft.ownerOf(tokenId) == msg.sender, "you are not the owner of the NFT");
+        // 验证交易是否由 NFT 拥有者发起，并给出更明确的错误信息。
+        require(nft.ownerOf(tokenId) == msg.sender, "NFTPoolLockAndRelease: sender is not owner");
+        require(
+            nft.getApproved(tokenId) == address(this) || nft.isApprovedForAll(msg.sender, address(this)),
+            "NFTPoolLockAndRelease: NFT not approved to pool"
+        );
 
         // 将 NFT 从用户转移到本合约中锁定。
         nft.transferFrom(msg.sender, address(this), tokenId);
