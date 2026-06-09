@@ -1,4 +1,55 @@
-# 第六课 Lesson 6
+# 实践成果
+
+## 原链铸造，原链锁定发消息
+
+1. 在 source chain 部署合约：npx hardhat deploy --tags sourcechain --network sepolia，如果你在上一步使用的不是 sepolia 和 amoy，那么请相应调整 network 名字
+
+2. 在 dest chain 部署合约：npx hardhat deploy --tags destchain --network amoy 如果你在上一步使用的不是 sepolia 和 amoy，那么请相应调整 network 名字
+
+3. 铸造 nft：npx hardhat mint-nft --network sepolia
+
+4. 查看 nft 状态：npx hardhat check-nft --network sepolia
+
+5. 锁定并且跨链 nft：npx hardhat lock-and-cross --tokenid 0 --network sepolia
+
+结果输出：
+sepolia 链
+1. 发布者地址： 0x1573B70e15343b7983Bc3836470765c9025fe1e4
+2. nft地址： 0x24FE4605912266C0bbE65F02Ce4ddcC21e0998ec
+3. nft池子地址： 0xE527Ab0a02E4d5D7b346fDb83A9c19ADa01eB171
+deployer is 0x1573B70e15343b7983Bc3836470765c9025fe1e4
+nft address is 0x24FE4605912266C0bbE65F02Ce4ddcC21e0998ec
+deploying "NFTPoolLockAndRelease" (tx: 0xb2a0dd68393d301ad61b47e320402070a0fc32c4c67bace35b2936b739839a85)...: deployed at 0xE527Ab0a02E4d5D7b346fDb83A9c19ADa01eB171 with 2564601 gas
+
+amoy 链
+1. 发布者地址： 0x1573B70e15343b7983Bc3836470765c9025fe1e4
+2. wnft地址： 0xCDAa88E1a79889CEC273EBcf1497D8e48Cd9B915
+3. wnft池子地址： 0xf4dd51A3d6a4beb57233a004Fc7DF33095952A26
+deploying "WrappedNFT" (tx: 0xe16b87d1523485de04937fd5739e90661d79f281be19d793688430412b0f7020)...: deployed at 0xCDAa88E1a79889CEC273EBcf1497D8e48Cd9B915 with 2671199 gas
+deploying "NFTPoolBurnAndMint" (tx: 0x8b07ea8d01f854fb01492edd2ca48471e70e824a195c83aa224a806c8dc16def)...: deployed at 0xf4dd51A3d6a4beb57233a004Fc7DF33095952A26 with 2500048 gas
+
+锁定且跨链 lock-and-cross
+```
+deployer is 0x1573B70e15343b7983Bc3836470765c9025fe1e4
+NFTPoolBurnAndMint address on destination chain is 0xf4dd51A3d6a4beb57233a004Fc7DF33095952A26
+destination chain selector is 16281711391670634445
+balance before: 10000000000000000000
+deployer LINK balance: 165000000000000000000
+balance after: 20000000000000000000
+NFT owner of token 0: 0x1573B70e15343b7983Bc3836470765c9025fe1e4
+NFT approved to: 0xE527Ab0a02E4d5D7b346fDb83A9c19ADa01eB171
+isApprovedForAll for pool: false
+approve transaction submitted for token 0 to pool 0xE527Ab0a02E4d5D7b346fDb83A9c19ADa01eB171
+NFT approved after tx: 0xE527Ab0a02E4d5D7b346fDb83A9c19ADa01eB171
+0, 0x1573B70e15343b7983Bc3836470765c9025fe1e4, 16281711391670634445, 0xf4dd51A3d6a4beb57233a004Fc7DF33095952A26
+NFT locked and crossed, transaction hash is 0xc33d315102208c154778c6fb239bff5cae9dee4b41f0522fb3eb6cafd0e6109e
+```
+
+ccip 浏览器查看
+通过sourcetx搜索： 0xc33d315102208c154778c6fb239bff5cae9dee4b41f0522fb3eb6cafd0e6109e
+https://ccip.chain.link/msg/0x5204d4ed7ade40887e434daa54b1bb0f087c1889687506fc47ca0fbc3883c908
+
+
 [中文](#内容介绍) | [English](#introduction)
 ## 内容介绍
 这是第六课的代码部分，在这部分代码中，我们构建一个 ERC721 的合约，让这个合约可以被从 Sepolia 区块链被跨链跨到 Amoy 区块链。<br>
