@@ -13,6 +13,7 @@ import {MyToken} from "./MyNFT.sol";
  * 这是一个示例合约，使用硬编码值以便于说明。
  * 这是一个示例合约，使用未经审核的代码。
  * 切勿在生产环境中使用此代码。
+ * https://docs.chain.link/ccip/tutorials/evm/send-arbitrary-data#tutorial
  */
 
 /// @title - 一个简单的跨链字符串消息发送/接收合约。
