@@ -1,4 +1,14 @@
 # 实践成果
+1. 跨链交易hash
+https://ccip.chain.link/msg/0x5204d4ed7ade40887e434daa54b1bb0f087c1889687506fc47ca0fbc3883c908
+2. 原链 MyToken NFT合约地址
+https://sepolia.etherscan.io/token/0x24fe4605912266c0bbe65f02ce4ddcc21e0998ec
+3. 原链 NFT池子 合约地址
+https://sepolia.etherscan.io/address/0xE527Ab0a02E4d5D7b346fDb83A9c19ADa01eB171
+4. 目标链 WrappedMyToken NFT合约地址
+https://amoy.polygonscan.com/token/0xcdaa88e1a79889cec273ebcf1497d8e48cd9b915#transactions
+5. 目标链 WNFT池子 合约地址
+https://amoy.polygonscan.com/address/0xf4dd51A3d6a4beb57233a004Fc7DF33095952A26
 
 ## 原链铸造，原链锁定发消息
 
