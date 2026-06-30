@@ -50,6 +50,16 @@ module.exports = {
   etherscan: {
     apiKey: {
       sepolia: process.env.ETHERSCAN_API_KEY
-    }
+    },
+    customChains: [
+      {
+        network: "sepolia",
+        chainId: 11155111,
+        urls: {
+          apiURL: "https://api-sepolia.etherscan.io/api/v2",
+          browserURL: "https://sepolia.etherscan.io"
+        }
+      }
+    ]
   }
 };
