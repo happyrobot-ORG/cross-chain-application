@@ -20,10 +20,17 @@ module.exports = async({getNamedAccounts, deployments}) => {
     const myTokenContract = await ethers.getContract("MyToken", firstAccount)
 
     if(hre.network.config.chainId == 11155111 && process.env.ETHERSCAN_API_KEY) {
-      console.log("wait for 3 confirmations")
-      await myTokenContract.deploymentTransaction().wait(3)
+      // try to obtain a deployment transaction hash from the deployment result
+      const txHash = myToken.receipt && myToken.receipt.transactionHash ? myToken.receipt.transactionHash : (myToken.transactionHash || null)
+      if (txHash) {
+        console.log("wait for 3 confirmations")
+        const tx = await ethers.provider.getTransaction(txHash)
+        await tx.wait(3)
+      } else {
+        console.log("no deployment transaction available (contract reused); skipping wait")
+      }
       console.log("verifying contract on etherscan...")
-      await verify(myTokenContract.target, ["MyNFT", "MNT"])
+      await verify(myToken.address, ["MyNFT", "MNT"])
     } else {
       console.log("skipping verification")
     }
