@@ -46,5 +46,8 @@ module.exports = {
         destChain: "sepolia"
       }
     }
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY
   }
 };

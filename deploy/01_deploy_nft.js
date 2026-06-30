@@ -22,15 +22,15 @@ module.exports = async({getNamedAccounts, deployments}) => {
     if(hre.network.config.chainId == 11155111 && process.env.ETHERSCAN_API_KEY) {
       // try to obtain a deployment transaction hash from the deployment result
       const txHash = myToken.receipt && myToken.receipt.transactionHash ? myToken.receipt.transactionHash : (myToken.transactionHash || null)
-      if (txHash) {
-        console.log("wait for 3 confirmations")
-        const tx = await ethers.provider.getTransaction(txHash)
-        await tx.wait(3)
-      } else {
-        console.log("no deployment transaction available (contract reused); skipping wait")
+
+      // wait for code to be present on-chain and for confirmations, then verify with retries
+      try {
+        await waitForCodeAndConfirm(myToken.address, txHash, 3, 5 * 60 * 1000)
+        console.log("verifying contract on etherscan...")
+        await verifyWithRetries(myToken.address, ["MyNFT", "MNT"], 5)
+      } catch (err) {
+        console.error("Verification skipped/failed:", err.message || err)
       }
-      console.log("verifying contract on etherscan...")
-      await verify(myToken.address, ["MyNFT", "MNT"])
     } else {
       console.log("skipping verification")
     }
@@ -42,6 +42,52 @@ async function verify(address, args) {
     address: address,
     constructorArguments: args,
   });
+}
+
+// wait until contract code is present and the deployment transaction has the required confirmations
+async function waitForCodeAndConfirm(address, txHash, confirmations = 3, timeoutMs = 300000) {
+  const start = Date.now()
+  const provider = ethers.provider
+
+  while (true) {
+    const code = await provider.getCode(address)
+    if (code && code !== '0x') {
+      if (txHash) {
+        const tx = await provider.getTransaction(txHash)
+        if (tx && tx.blockNumber) {
+          const current = await provider.getBlockNumber()
+          const confs = current - tx.blockNumber
+          if (confs >= confirmations) return
+        }
+      } else {
+        // no txHash (reused) but code present -> proceed
+        return
+      }
+    }
+    if (Date.now() - start > timeoutMs) throw new Error('timeout waiting for contract code or confirmations')
+    await new Promise(r => setTimeout(r, 5000))
+  }
+}
+
+// verify with retries and exponential backoff; ignores "already verified" errors
+async function verifyWithRetries(address, args, attempts = 5) {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      await hre.run('verify:verify', { address, constructorArguments: args })
+      console.log('verification succeeded')
+      return
+    } catch (e) {
+      const msg = e && e.message ? e.message : String(e)
+      if (msg.toLowerCase().includes('already verified') || msg.toLowerCase().includes('already verified')) {
+        console.log('contract already verified')
+        return
+      }
+      const waitMs = Math.min(60000, Math.pow(2, i) * 1000 + 2000)
+      console.log(`verify attempt ${i+1} failed: ${msg}. retrying in ${waitMs}ms`)
+      await new Promise(r => setTimeout(r, waitMs))
+    }
+  }
+  throw new Error('verification failed after retries')
 }
 
 module.exports.tags = ["all", "sourcechain"]
