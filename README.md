@@ -1,4 +1,11 @@
-# 实践成果
+# 实践成果-NFT
+token地址：
+https://sepolia.etherscan.io/token/0x24fe4605912266c0bbe65f02ce4ddcc21e0998ec
+合约地址：
+https://sepolia.etherscan.io/address/0x24fe4605912266c0bbe65f02ce4ddcc21e0998ec
+
+
+# 实践成果-跨链-ccip消息跨链
 1. 跨链交易hash
 https://ccip.chain.link/msg/0x5204d4ed7ade40887e434daa54b1bb0f087c1889687506fc47ca0fbc3883c908
 2. 原链 MyToken NFT合约地址
@@ -58,6 +65,61 @@ NFT locked and crossed, transaction hash is 0xc33d315102208c154778c6fb239bff5cae
 ccip 浏览器查看
 通过sourcetx搜索： 0xc33d315102208c154778c6fb239bff5cae9dee4b41f0522fb3eb6cafd0e6109e
 https://ccip.chain.link/msg/0x5204d4ed7ade40887e434daa54b1bb0f087c1889687506fc47ca0fbc3883c908
+
+## 最大的nft交易市场
+http://opensea.io
+
+## openzeppelin开发向导：
+https://wizard.openzeppelin.com/
+
+## opensea的metadata标准
+https://docs.opensea.io/docs/metadata-standards
+json格式的文件
+
+## 去中心化存储 IPFS
+https://ipfs.tech/
+### filebase使用
+问题：ipfs使用难度大，支付费用，搭建节点
+解决：有三方公司，基于ipfs网络提供服务，方便更好的接入
+
+### filebase使用详情
+1.上传一个图片，得到图片的ipfs地址
+https://foreign-maroon-stork.myfilebase.com/ipfs/QmUa7GMUyJVUYTHoRVQW9wryy4u78mnv1sYphvCw8cHYKD
+
+2.上次一个json文件，里面还有描述信息和图片ipfs地址
+https://foreign-maroon-stork.myfilebase.com/ipfs/QmW3xpbWwyPeJD8RyiZ9ULTToUj3R7Zr2GuvFeWPstFdPK
+```
+{
+  "name": "Cute Puppy",
+  "description": "A cute puppy stored on IPFS via Filebase.",
+  "image": "ipfs://QmUa7GMUyJVUYTHoRVQW9wryy4u78mnv1sYphvCw8cHYKD",
+  "attributes": [
+    {
+      "trait_type": "Animal",
+      "value": "Dog"
+    },
+    {
+      "trait_type": "Mood",
+      "value": "Cute"
+    },
+    {
+      "trait_type": "Background",
+      "value": "Blue"
+    }
+  ]
+}
+```
+### 将MyNftToken部署。可以在remix中进行
+1.粘贴代码
+2.链上metamask 测试网络sepolia
+3.部署，选择钱包地址
+4.safeMint
+5.totalSupply查看铸造结果
+6.tokenURI，传tokenId=0。查询tokenId对应的metadataURI
+7.去opensea的测试网站上看自己的metadataURI的展示效果
+1. 登录自己的钱包账号
+2. 查看自己的钱包nft 
+3. 为何可以展示：opensea测试网会根据钱包地址，查询出这个地址拥有的nft
 
 
 [中文](#内容介绍) | [English](#introduction)

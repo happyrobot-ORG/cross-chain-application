@@ -22,7 +22,7 @@ contract MyToken is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
         Ownable(msg.sender)
     {}
 
-    /// @notice 安全铸造一个新的 NFT 到指定地址。
+    /// @notice 安全铸造一个新的 NFT 到指定地址。实际使用中可以将METADATA_URI变为动态生成的URI，以便每个NFT有不同的元数据。
     /// @param to 接收 NFT 的地址。
     function safeMint(address to)
         public
