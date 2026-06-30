@@ -121,6 +121,19 @@ https://foreign-maroon-stork.myfilebase.com/ipfs/QmW3xpbWwyPeJD8RyiZ9ULTToUj3R7Z
 2. 查看自己的钱包nft 
 3. 为何可以展示：opensea测试网会根据钱包地址，查询出这个地址拥有的nft
 
+# 部署指令和交互指令
+- npx env-enc set
+238567
+
+- 用run脚本文件部署
+npx hardhat run scripts/deploy.js
+
+- 用task任务的形式进行部署
+npx hardhat deploy-fundMe
+npx hardhat interact-fundMe --contract 0x3eEED288c1052aA16adedbfb9E0EC49BD478809F
+
+- 用test框架部署
+npx hardhat test --network sepolia
 
 [中文](#内容介绍) | [English](#introduction)
 ## 内容介绍
